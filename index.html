@@ -1,0 +1,775 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rally Machine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a hard court seen from above. Court blue ink on chalk white, optic yellow only where the ball is. Narrow reading column, wide figure bands. */
+:root{
+  --chalk:#f5f7f6; --surface:#ffffff; --ink:#14233a; --muted:#53627a;
+  --court:#1f4f8f; --line:#d5dde6; --ball:#d9ef2f; --ball-ink:#3c4a00;
+  --display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --body:"Source Serif 4",Georgia,serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --chalk:#0f1826; --surface:#16233a; --ink:#e8eef6; --muted:#9fb0c6;
+  --court:#7fb0f0; --line:#2a3b56; --ball:#d9ef2f; --ball-ink:#1b2200; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --chalk:#0f1826; --surface:#16233a; --ink:#e8eef6; --muted:#9fb0c6;
+  --court:#7fb0f0; --line:#2a3b56; --ball:#d9ef2f; --ball-ink:#1b2200; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--chalk);color:var(--ink);font:400 1.06rem/1.65 var(--body);padding-inline:20px;padding-block:0}
+.wrap{max-width:1080px;margin:0 auto}
+.col{max-width:680px}
+h1,h2,h3{font-family:var(--display);font-weight:700;line-height:1.02;text-wrap:balance;margin:0;letter-spacing:.005em}
+h1{font-size:clamp(2.8rem,8vw,5.4rem);text-transform:uppercase}
+h2{font-size:clamp(2rem,4.6vw,2.9rem);text-transform:uppercase}
+h3{font-size:1.45rem;font-weight:600}
+p{margin:0}
+a{color:var(--court);text-underline-offset:3px}
+a:focus-visible{outline:2px solid var(--court);outline-offset:3px}
+.label{font:500 .74rem/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.mark{background:linear-gradient(transparent 58%,var(--ball) 58%);color:inherit;padding:0 .08em}
+
+/* top bar */
+.top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding-block:22px;border-bottom:1px solid var(--line)}
+.top nav{display:flex;gap:18px;flex-wrap:wrap}
+.top nav a{font:500 .8rem var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-decoration:none}
+.top nav a:hover{color:var(--court)}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.25fr .75fr;gap:48px;align-items:center;padding-block:56px 48px}
+.hero > div{min-width:0;display:grid;gap:22px}
+.lede{font-size:1.2rem;color:var(--muted);max-width:34em}
+.vid{position:relative;border-radius:6px;overflow:hidden;background:#000;aspect-ratio:9/16;max-height:620px;max-width:100%;justify-self:center;width:100%}
+.vid video{width:100%;height:100%;object-fit:cover;display:block}
+.vid figcaption{position:absolute;left:10px;bottom:10px;font:500 .7rem var(--mono);color:#fff;background:rgba(0,0,0,.55);padding:4px 8px;border-radius:3px;letter-spacing:.06em}
+.specs{display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--ink);border-bottom:1px solid var(--line)}
+.specs div{padding:14px 12px 14px 0;display:grid;gap:4px}
+.specs b{font:600 1.9rem/1 var(--display)}
+.specs span{font:400 .78rem/1.3 var(--mono);color:var(--muted)}
+
+section{padding-block:64px;border-top:1px solid var(--line)}
+.sec-head{display:grid;gap:12px;margin-bottom:30px}
+.prose{display:grid;gap:16px}
+
+/* sense decide launch */
+.loop{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line);background:var(--surface);border-radius:6px;overflow:hidden}
+.loop article{padding:26px 24px;display:grid;gap:10px;align-content:start;min-width:0}
+.loop article + article{border-left:1px solid var(--line)}
+.loop .n{font:700 3rem/1 var(--display);color:var(--court)}
+.loop p{font-size:.98rem;color:var(--muted)}
+
+/* galleries */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.grid.two{grid-template-columns:repeat(2,1fr)}
+figure{margin:0;display:grid;gap:10px;min-width:0}
+figure a{display:block;border-radius:5px;overflow:hidden;border:1px solid var(--line);background:#fff}
+figure img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}
+.grid.two img{aspect-ratio:3/4}
+figure.wide{grid-column:span 2}
+figure.wide img{aspect-ratio:16/10;object-fit:contain;background:#fff}
+figcaption{font-size:.92rem;color:var(--muted);line-height:1.5}
+figcaption b{color:var(--ink);font-weight:600}
+
+.parts{display:grid;grid-template-columns:repeat(2,1fr);gap:0 32px;margin-top:28px}
+.parts div{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid var(--line);font-size:.95rem}
+.parts span:last-child{font-family:var(--mono);font-size:.82rem;color:var(--muted);text-align:right}
+
+/* solver */
+.eq{font:400 .9rem/1.8 var(--mono);background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:18px 20px;overflow-x:auto;white-space:pre}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:40px}
+.two-col > *{min-width:0}
+
+/* test data */
+.court{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:20px 18px 8px;overflow-x:auto}
+.court svg{display:block;width:100%;min-width:600px;height:auto}
+.tbl{overflow-x:auto;margin-top:22px}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.93rem}
+th{font:500 .72rem var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;padding:10px 12px;border-bottom:2px solid var(--ink)}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.good td:last-child::before{content:"";display:inline-block;width:.6em;height:.6em;border-radius:50%;background:var(--ball);border:1px solid var(--ball-ink);margin-right:.5em;vertical-align:.05em}
+
+.findings{display:grid;grid-template-columns:repeat(2,1fr);gap:28px 40px}
+.findings div{display:grid;gap:6px;align-content:start}
+.findings p{font-size:.97rem;color:var(--muted)}
+.big{font:600 2.2rem/1 var(--display);color:var(--court)}
+
+.next{display:grid;gap:0;counter-reset:n}
+.next li{list-style:none;display:grid;grid-template-columns:3rem 1fr;gap:12px;padding:16px 0;border-bottom:1px solid var(--line)}
+.next li::before{counter-increment:n;content:counter(n,decimal-leading-zero);font:600 1.4rem var(--display);color:var(--court)}
+.next{padding:0;margin:0}
+
+footer{padding-block:40px 56px;border-top:2px solid var(--ink);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:.92rem;color:var(--muted)}
+
+@media (max-width:860px){
+  .hero{grid-template-columns:1fr;gap:32px;padding-block:36px}
+  .vid{max-width:360px}
+  .loop{grid-template-columns:1fr}
+  .loop article + article{border-left:0;border-top:1px solid var(--line)}
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .two-col,.parts,.findings{grid-template-columns:1fr}
+}
+@media (max-width:520px){
+  .grid,.grid.two{grid-template-columns:1fr}
+  figure.wide{grid-column:auto}
+  .specs{grid-template-columns:repeat(2,1fr)}
+  section{padding-block:48px}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+
+/* motion + interactivity */
+.mark{background-size:100% 100%;background-repeat:no-repeat}
+.anim .mark{animation:sweep .9s .55s cubic-bezier(.2,.7,.2,1) both}
+@keyframes sweep{from{background-size:0% 100%}to{background-size:100% 100%}}
+.flight{display:block;width:100%;height:70px;overflow:visible}
+.flight path{fill:none;stroke:var(--court);stroke-width:1.5;stroke-dasharray:3 6;opacity:.55}
+.flight .ball{fill:var(--ball);stroke:var(--ball-ink);stroke-width:1}
+.anim .flight .ball{offset-path:path("M8 62 Q 210 -30 420 58 Q 470 30 520 58");animation:fly 1.6s .1s cubic-bezier(.35,.1,.6,1) both}
+@keyframes fly{from{offset-distance:0%}to{offset-distance:100%}}
+.flight .ball.rest{transform:translate(520px,58px)}
+.anim .flight .ball.rest{transform:none}
+.rv.in{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+@keyframes rise{from{opacity:.25;transform:translateY(18px)}to{opacity:1;transform:none}}
+figure a img{transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+figure a:hover img{transform:scale(1.04)}
+.loop article{transition:background .25s}
+.loop article:hover{background:color-mix(in srgb,var(--court) 7%,var(--surface))}
+
+
+.chip{justify-self:start;font:500 .68rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:5px 8px;border-radius:3px;border:1px solid}
+.chip.live{color:var(--court);border-color:var(--court)}
+.chip.test,.chip.sim{color:var(--muted);border-color:var(--line)}
+.code{font:400 .84rem/1.65 var(--mono);background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:16px 18px;overflow-x:auto;white-space:pre;margin:0}
+.code .c{color:var(--muted)}
+.subs{display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--ink);margin-bottom:34px}
+.subs div{padding:14px 14px 14px 0;display:grid;gap:4px;align-content:start;min-width:0}
+.subs b{font:600 1.25rem/1.1 var(--display)}
+.subs span{font-size:.9rem;color:var(--muted);line-height:1.45}
+.lessons{display:grid;gap:22px}
+.lessons div{display:grid;gap:4px}
+.lessons p{font-size:.97rem;color:var(--muted)}
+@media (max-width:860px){.subs{grid-template-columns:repeat(2,1fr)}}
+
+
+.pipe{display:grid;gap:0;margin:0;padding:0;counter-reset:p}
+.pipe li{list-style:none;display:grid;grid-template-columns:3rem 1fr;gap:14px;padding:18px 0;border-bottom:1px solid var(--line)}
+.pipe li::before{counter-increment:p;content:counter(p,decimal-leading-zero);font:600 1.5rem var(--display);color:var(--court)}
+.pipe h3{margin-bottom:4px}
+.pipe p{font-size:.97rem;color:var(--muted)}
+.callout{border-left:3px solid var(--ball);background:var(--surface);padding:16px 18px;border-radius:0 5px 5px 0;display:grid;gap:6px}
+.callout b{font:600 2rem/1 var(--display);color:var(--court)}
+.credit{font-size:.88rem;color:var(--muted)}
+
+
+.drillbox{display:grid;grid-template-columns:1.2fr .8fr;gap:28px;margin-bottom:34px;align-items:start}
+.drillbox > *{min-width:0}
+.drillbox p{font-size:.97rem;color:var(--muted);margin-top:6px}
+#drills button{padding:6px 10px;font-size:.85rem}
+@media (max-width:860px){.drillbox{grid-template-columns:1fr}}
+
+/* simulator */
+.sim{display:grid;grid-template-columns:1.15fr .85fr;gap:28px;align-items:start}
+.sim > *{min-width:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px}
+.topview{display:block;width:100%;height:auto;cursor:crosshair;touch-action:manipulation}
+.topview .surf{fill:var(--court);opacity:.16}
+.topview .ln{stroke:var(--ink);stroke-width:1;fill:none;opacity:.75}
+.topview .net{stroke:var(--ink);stroke-width:2.5}
+.topview .zone{fill:var(--ball);opacity:0;transition:opacity .2s}
+.topview:hover .zone{opacity:.12}
+.topview .aim{stroke:var(--court);stroke-width:1.2;stroke-dasharray:3 4}
+.topview .tgt{fill:none;stroke:var(--court);stroke-width:1.5}
+.topview .opp{fill:var(--ink)}
+.topview .mach{fill:var(--court)}
+.ballc{fill:var(--ball);stroke:var(--ball-ink);stroke-width:1}
+.hint{font:400 .78rem/1.4 var(--mono);color:var(--muted);margin-top:10px}
+.ctrls{display:grid;gap:14px;margin-top:16px}
+.ctrl{display:grid;gap:6px}
+.ctrl label{display:flex;justify-content:space-between;font:500 .76rem var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ctrl output{color:var(--ink);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--court)}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+button{font:600 1rem var(--display);letter-spacing:.06em;text-transform:uppercase;border-radius:4px;padding:10px 16px;cursor:pointer;border:1.5px solid var(--court);background:transparent;color:var(--court)}
+button.pri{background:var(--court);color:var(--chalk)}
+button:hover{filter:brightness(1.1)}
+button:focus-visible{outline:2px solid var(--court);outline-offset:2px}
+.read{display:grid;grid-template-columns:1fr 1fr;border-top:2px solid var(--ink)}
+.read div{padding:12px 0;border-bottom:1px solid var(--line);display:grid;gap:2px}
+.read span{font:500 .7rem var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.read b{font:600 1.7rem/1.05 var(--display);font-variant-numeric:tabular-nums}
+.read small{font:400 .8rem var(--mono);color:var(--muted)}
+.status{font-size:.92rem;color:var(--muted);margin-top:12px;min-height:1.5em}
+.side{margin-top:22px;overflow-x:auto}
+.side svg{display:block;width:100%;min-width:560px;height:auto}
+.side .gnd{stroke:var(--ink);stroke-width:1.5}
+.side .netl{stroke:var(--ink);stroke-width:3}
+.side .path{fill:none;stroke:var(--court);stroke-width:1.8}
+.side text{font:400 11px var(--mono);fill:var(--muted)}
+.topview text{font:400 6.5px var(--mono);fill:var(--muted)}
+.note{font-size:.88rem;color:var(--muted);margin-top:14px;max-width:62ch}
+
+/* test chart interplay */
+.tball{transition:transform .25s,opacity .25s;transform-box:fill-box;transform-origin:center}
+.court.dim .tball{opacity:.25}
+.court.dim .tball.hot{opacity:1;transform:scale(1.7)}
+.drop .tball{animation:drop .6s cubic-bezier(.3,1.4,.5,1) both}
+@keyframes drop{from{transform:translateY(-60px);opacity:0}to{transform:none;opacity:1}}
+.arc{stroke-dasharray:900;stroke-dashoffset:0}
+.drop .arc{animation:draw 1.2s ease-out both}
+@keyframes draw{from{stroke-dashoffset:900}to{stroke-dashoffset:0}}
+tbody tr{transition:background .2s;cursor:default}
+tbody tr[data-m]:hover,tbody tr[data-m]:focus{background:color-mix(in srgb,var(--ball) 22%,transparent);outline:none}
+
+/* lightbox */
+dialog.lb{border:0;padding:0;background:transparent;max-width:min(1000px,94vw);width:100%;color:var(--ink)}
+dialog.lb::backdrop{background:rgba(8,14,24,.82)}
+.lbin{background:var(--surface);border-radius:8px;overflow:hidden;display:grid}
+.lbin img{width:100%;max-height:72vh;object-fit:contain;background:#fff;display:block}
+.lbbar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;flex-wrap:wrap}
+.lbbar p{font-size:.92rem;color:var(--muted);flex:1 1 260px;min-width:0}
+.lbbar .btns button{padding:6px 12px;font-size:.9rem}
+
+@media (max-width:860px){.sim{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){
+  .anim .mark,.anim .flight .ball,.rv.in,.drop .tball,.drop .arc{animation:none}
+  .anim .flight .ball{transform:translate(520px,58px)}
+  figure a:hover img{transform:none}
+}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="top">
+    <span class="label">Team engineering project · 3 builders</span>
+    <nav aria-label="Sections">
+      <a href="#idea">Idea</a><a href="#team">Team</a><a href="#build">Build</a><a href="#code">Code</a><a href="#cad">CAD</a><a href="#solver">Solver</a><a href="#sim">Simulator</a><a href="#tests">Tests</a><a href="#data">Data</a><a href="#vision">Vision</a>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <div>
+      <span class="label">Tennis ball machine, prototype 1</span>
+      <svg class="flight" viewBox="0 0 540 70" aria-hidden="true"><path d="M8 62 Q 210 -30 420 58 Q 470 30 520 58"/><line x1="214" y1="70" x2="214" y2="44" stroke="var(--ink)" stroke-width="2.5"/><circle class="ball rest" r="7" cx="0" cy="0"/></svg>
+      <h1>A ball machine that <span class="mark">plays the point</span></h1>
+      <p class="lede">Most ball machines feed the same ball over and over. We are building one that will watch where the ball lands and where the opponent stands, choose a reply the way a professional would, and aim for that exact spot. Today the Raspberry Pi can turn a court target into wheel speeds, tilt and rotation, and plan whole drills. Field testing those drills and the vision system come next.</p>
+      <div class="specs">
+        <div><b>2</b><span>independently driven flywheels</span></div>
+        <div><b>23.77 m</b><span>full court length reached in testing</span></div>
+        <div><b>50 to 75°</b><span>wheel arm tilt, giving 15 to 40° launch</span></div>
+        <div><b>Pi 4</b><span>onboard computer</span></div>
+      </div>
+    </div>
+    <figure class="vid">
+      <video src="media/machine.mp4" poster="media/poster.jpg" autoplay muted loop playsinline controls preload="metadata" aria-label="The prototype on court, loading and firing a ball"></video>
+      <figcaption>ON COURT · PROTOTYPE 1</figcaption>
+    </figure>
+  </div>
+
+  <section id="idea">
+    <div class="rv sec-head col">
+      <span class="label">The idea</span>
+      <h2>Practice against a player, not a feeder</h2>
+    </div>
+    <div class="prose col" style="margin-bottom:34px">
+      <p>A real opponent reacts. They hit away from where you stand, punish a short ball, and defend when pushed wide. We wanted a machine that does the same, so we split the problem into three jobs that will run every shot. Each one is at a different stage.</p>
+    </div>
+    <div class="rv loop">
+      <article><span class="n">1</span><span class="chip test">In testing</span><h3>Sense</h3><p>Cameras on the machine find the incoming bounce on the near court and the opponent's position on the far side. A calibrated court homography turns pixels into court coordinates in feet.</p></article>
+      <article><span class="n">2</span><span class="chip sim">Runs in simulation</span><h3>Decide</h3><p>A shot sampler built from professional match footage picks the stroke, direction, depth and risk. Its aim is set relative to the opponent: target x equals opponent x plus a sampled hit away distance.</p></article>
+      <article><span class="n">3</span><span class="chip live">Hardware and solver coded · field tests next</span><h3>Launch</h3><p>A physics solver converts the target (x, y) into top and bottom wheel speeds, tilt angle and rotation, with a required margin over the net.</p></article>
+    </div>
+  </section>
+
+
+  <section id="team">
+    <div class="rv sec-head col">
+      <span class="label">Who built it</span>
+      <h2>The team</h2>
+      <p class="prose">We built this as a team of three. Everyone worked on every part, and each of us led one area.</p>
+    </div>
+    <div class="rv loop">
+      <article><span class="label">Code and vision</span><h3>Tarun Dasari</h3><p>Wrote the software, led the computer vision testing on court footage, and shared the Raspberry Pi electronics.</p></article>
+      <article><span class="label">CAD and wiring</span><h3>Johnson Xiao</h3><p>Led the CAD models in Onshape and Fusion 360, wired the motors and actuator, and shared the Raspberry Pi electronics.</p></article>
+      <article><span class="label">Fabrication</span><h3>Ziv Respler</h3><p>Led the physical build: cutting, assembling and mounting the launcher, base and brackets.</p></article>
+    </div>
+  </section>
+
+  <section id="build">
+    <div class="rv sec-head col">
+      <span class="label">Hardware</span>
+      <h2>The build</h2>
+      <p class="prose">Two motor driven wheels pinch the ball and launch it. A 12 V linear actuator tilts the launcher arm to set the arc, and the whole assembly sits on a wooden base with the battery, motor drivers and Raspberry Pi.</p>
+    </div>
+    <div class="grid">
+      <figure><a href="media/build-launcher.jpg" target="_blank" rel="noopener"><img src="media/build-launcher.jpg" alt="Two flywheel launcher with DC motors and a linear actuator on a wooden base" loading="lazy"></a><figcaption><b>Launcher assembly.</b> Two DC motors with large flywheels mounted on a single arm, so the gap between wheels stays fixed as the arm tilts.</figcaption></figure>
+      <figure><a href="media/build-measure.jpg" target="_blank" rel="noopener"><img src="media/build-measure.jpg" alt="Measuring the launcher geometry with a digital caliper" loading="lazy"></a><figcaption><b>Measuring the linkage.</b> Caliper measurements of the actuator mount feed the tilt model, which maps actuator extension to launch angle.</figcaption></figure>
+      <figure><a href="media/still_13.jpg" target="_blank" rel="noopener"><img src="media/still_13.jpg" alt="The machine on a hard court at dusk with the net behind it" loading="lazy"></a><figcaption><b>Field ready.</b> Battery powered and wired for court testing, positioned at the baseline centre mark.</figcaption></figure>
+    </div>
+    <div class="rv parts">
+      <div><span>Launch wheels</span><span>2 DC motors, IBT2 drivers</span></div>
+      <div><span>Tilt</span><span>12 V linear actuator + potentiometer</span></div>
+      <div><span>Rotation</span><span>stepper motor, TB6600 driver</span></div>
+      <div><span>Compute</span><span>Raspberry Pi 4</span></div>
+      <div><span>Power</span><span>12 V 18 Ah sealed lead acid</span></div>
+      <div><span>Tilt sensing</span><span>ADS1115 ADC over I2C</span></div>
+    </div>
+  </section>
+
+
+  <section id="code">
+    <div class="rv sec-head col">
+      <span class="label">Software · Python on Raspberry Pi 4</span>
+      <h2>The control code</h2>
+      <p class="prose">We wrote the Python that drives every motor on the machine. One script runs each subsystem alone for testing, or all of them together, and a systemd service starts it when the Pi boots.</p>
+    </div>
+    <div class="rv subs">
+      <div><b>Flywheels</b><span>Two PWM channels per driver. The wheels spin in opposite directions to grip the ball, ramping up in 20 steps.</span></div>
+      <div><b>Tilt</b><span>Actuator extends and retracts at 78% power. A potentiometer read through an ADS1115 reports the angle.</span></div>
+      <div><b>Rotation</b><span>Stepper at 16x microstepping, 3200 steps per turn. A sweep of 180 steps turns about 20°.</span></div>
+      <div><b>At the court</b><span>The Pi broadcasts its own Wi Fi hotspot, so we control it over SSH with no router.</span></div>
+    </div>
+    <div class="rv drillbox">
+      <div><h3>Autonomous drills</h3><p>drills.py plans a whole drill from court targets, checks every shot before any motor moves, and refuses targets outside the court or wheel commands outside 0 to 255. Tilt now runs closed loop on the potentiometer to within 0.7°, yaw turns while the wheels spin up, and a dry run flag walks through the plan without power. Feeding is still by hand during a 6 second window.</p></div>
+<pre class="code">python3 drills.py list
+python3 drills.py plan baseline_depth
+python3 drills.py run random_mix --shots 12 --dry
+python3 drills.py run crosscourt --shots 10</pre>
+    </div>
+    <div class="rv two-col">
+      <div class="lessons">
+        <div><h3>The dead wheel that was a battery</h3><p>The bottom flywheel kept stalling once both wheels ran. We held single GPIO pins high and probed each driver with a multimeter. The battery read 5.94 V idle and fell to 4.9 V under load, starving the bottom driver at 4.4 V. The code was fine. A new battery fixed it.</p></div>
+        <div><h3>Finding the stepper's limit</h3><p>A 0.003 s step delay ran cleanly. Halving it to 0.0015 s made the motor click and stall when reversing, so the faster setting was dropped.</p></div>
+        <div><h3>Volts, not counts</h3><p>Moving from an ESP32 to the Pi meant the ADC library now returned volts instead of raw counts, so every old threshold had to be recalibrated against the actuator's end stops.</p></div>
+      </div>
+      <div style="display:grid;gap:10px;align-content:start;min-width:0">
+<pre class="code"><span class="c"># Actuator angle from the potentiometer</span>
+V_MIN = 0.285   <span class="c"># fully retracted, 0°</span>
+V_MAX = 0.610   <span class="c"># fully extended, 45°</span>
+
+def tilt_degrees():
+    return (chan.voltage - V_MIN) / ((V_MAX - V_MIN) / 45.0)
+
+<span class="c"># Spin both wheels up together</span>
+def wheels_on():
+    s1r.value = 0; s2f.value = 0
+    for i in range(1, 21):
+        s1f.value = i / 20; s2r.value = i / 20
+        sleep(0.1)</pre>
+        <p class="label">Excerpt from demo.py and tilt sensing</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="cad">
+    <div class="rv sec-head col">
+      <span class="label">Design</span>
+      <h2>CAD models</h2>
+      <p class="prose">We modelled the machine in Onshape and Fusion 360, designing every part before cutting or printing anything. Select any image to see it full size.</p>
+    </div>
+    <div class="grid">
+      <figure><a href="media/cad-assembly.jpg" target="_blank" rel="noopener"><img src="media/cad-assembly.jpg" alt="Full machine assembly in Fusion 360" loading="lazy"></a><figcaption><b>Full assembly.</b> Two wheel launcher on a rotating post, with the battery and electronics boxes laid out on a stacked base plate.</figcaption></figure>
+      <figure><a href="media/cad-pivot-bracket.jpg" target="_blank" rel="noopener"><img src="media/cad-pivot-bracket.jpg" alt="Pivot bracket CAD model" loading="lazy"></a><figcaption><b>Pivot bracket.</b> Holds the tilt axle. The slotted bore keys the shaft so the arm cannot slip under load.</figcaption></figure>
+      <figure><a href="media/cad-rotary-holder.jpg" target="_blank" rel="noopener"><img src="media/cad-rotary-holder.jpg" alt="Rotary holder CAD model" loading="lazy"></a><figcaption><b>Rotary holder.</b> Clamps the pivot assembly to the rotation stage that aims the shot left or right.</figcaption></figure>
+      <figure><a href="media/cad-rotary-side.jpg" target="_blank" rel="noopener"><img src="media/cad-rotary-side.jpg" alt="Side view of rotary holder" loading="lazy"></a><figcaption><b>Side profile.</b> The angled web stiffens the mount against the recoil of each launch.</figcaption></figure>
+      <figure><a href="media/cad-baseplate.jpg" target="_blank" rel="noopener"><img src="media/cad-baseplate.jpg" alt="Onshape base plate layout with gear rack and battery" loading="lazy"></a><figcaption><b>Base plate layout.</b> Battery, motor and a gear rack for the feed mechanism placed in Onshape.</figcaption></figure>
+      <figure><a href="media/cad-sketch.jpg" target="_blank" rel="noopener"><img src="media/cad-sketch.jpg" alt="Dimensioned sketch of the lever arm and dispenser arm" loading="lazy"></a><figcaption><b>Lever and dispenser arm sketch.</b> Dimensioned in inches, with the support leg set at 60°.</figcaption></figure>
+    </div>
+  </section>
+
+  <section id="solver">
+    <div class="rv sec-head col">
+      <span class="label">The math · shotmodel.py</span>
+      <h2>Solving a shot</h2>
+      <p class="prose">Our first court tests used wheel settings we picked by hand. The solver replaces that guesswork: given a target on the court, it returns the tilt, rotation and both wheel commands. It is plain Python with no extra libraries, so it runs on the Pi as is.</p>
+    </div>
+    <div class="rv two-col">
+      <div class="prose">
+        <p><b>Rotation is the easy part.</b> From a fixed spot at the baseline centre, the bearing to a target is simply atan2(x, y), as long as the ball has no sidespin.</p>
+        <p><b>Tilt and speed are not.</b> One landing spot can be reached by a flat fast ball or a lofted slow one. Range alone gives one equation for two unknowns, so the solver adds a second rule: clear the net (0.914 m high, 11.89 m away) by a chosen margin.</p>
+        <p><b>The wheels set speed and spin together.</b> Ball speed follows the average of the two wheel surface speeds, and spin follows their difference. Inverting those two relations gives the motor commands.</p>
+        <p><b>Physics gives the shape, testing gives the numbers.</b> Drag and lift for these balls, plus how much the wheels slip, cannot be derived. We fitted the four constants to our first court results, and will refit them after a calibration run of 30 to 40 measured shots. That needs far fewer shots than a lookup grid.</p>
+      </div>
+      <div style="display:grid;gap:16px;align-content:start">
+        <div class="eq">v0   = k_v · ½(R·ω_top + R·ω_bot)
+spin = k_s · R(ω_bot − ω_top) / 2r
+
+drag   = −½ ρ c_d A |v| v / m
+magnus =  ½ ρ c_l A |v| v⊥ / m
+c_l    = k_l · (spin · r / |v|)
+
+solve: bisect speed → hit range
+       bisect angle → net margin</div>
+        <div class="eq">k_v = 0.90   k_s = 0.50
+k_l = 0.30   c_d = 0.55
+wheel radius   0.0762 m
+wheel speed    650 rad/s at PWM 255
+launch angle   15° to 40°
+               (wheel arm 75° to 50°)</div>
+        <p class="label">Current fitted constants (Params in shotmodel.py)</p>
+      </div>
+    </div>
+  </section>
+
+
+  <section id="sim">
+    <div class="rv sec-head col">
+      <span class="label">Try it</span>
+      <h2>Shot simulator</h2>
+      <p class="prose">This runs the same solver as shotmodel.py on the Pi, ported to the browser. Tap anywhere on the far court to choose a target, or let the sampler pick a shot against a simulated opponent. The page solves rotation, launch angle and speed, then flies the ball.</p>
+    </div>
+    <div class="sim">
+      <div class="panel">
+        <svg class="topview" id="top" viewBox="0 0 305 165" role="img" aria-label="Top view of the court. Tap the far half to set a target.">
+          <rect class="surf" x="20" y="22.2" width="261.5" height="120.6"/>
+          <rect class="zone" x="150.8" y="22.2" width="130.7" height="120.6"/>
+          <rect class="ln" x="20" y="22.2" width="261.5" height="120.6"/>
+          <line class="ln" x1="20" y1="37.2" x2="281.5" y2="37.2"/><line class="ln" x1="20" y1="127.8" x2="281.5" y2="127.8"/>
+          <line class="ln" x1="80.4" y1="37.2" x2="80.4" y2="127.8"/><line class="ln" x1="221.2" y1="37.2" x2="221.2" y2="127.8"/>
+          <line class="ln" x1="80.4" y1="82.5" x2="221.2" y2="82.5"/>
+          <line class="ln" x1="20" y1="82.5" x2="23" y2="82.5"/><line class="ln" x1="278.5" y1="82.5" x2="281.5" y2="82.5"/>
+          <line class="net" x1="150.8" y1="16" x2="150.8" y2="149"/>
+          <line class="aim" id="aim" x1="20" y1="82.5" x2="20" y2="82.5"/>
+          <circle class="tgt" id="tgt" r="5" cx="-20" cy="-20"/>
+          <g id="opp" transform="translate(-40,-40)"><circle class="opp" r="4"/><text x="-7" y="-6" text-anchor="end">opponent</text></g>
+          <circle class="ballc" id="tball" r="3.2" cx="-20" cy="-20"/>
+          <rect class="mach" x="12" y="77.5" width="9" height="10" rx="1.5"/>
+          <text x="22" y="160">machine</text><text x="152" y="12">net</text>
+        </svg>
+        <p class="hint">Tap the far half of the court to set a target.</p>
+        <div class="ctrls">
+          <div class="ctrl"><label for="spin">Spin, negative is backspin <output id="spinO">1200 rpm</output></label><input id="spin" type="range" min="-1000" max="2000" step="100" value="1200"></div>
+          <div class="ctrl"><label for="marg">Net margin <output id="margO">0.90 m</output></label><input id="marg" type="range" min="0.2" max="3.2" step="0.05" value="0.9"></div>
+          <div class="btns"><button class="pri" id="pro" type="button">Pick like a pro</button><button id="again" type="button">Replay</button></div>
+          <div class="ctrl"><span class="label">Run a drill from drills.py</span>
+            <div class="btns" id="drills"></div></div>
+        </div>
+      </div>
+      <div>
+        <div class="read" aria-live="polite">
+          <div><span>Rotation</span><b id="rYaw">0.0°</b><small>left or right of centre</small></div>
+          <div><span>Launch angle</span><b id="rAng">0.0°</b><small id="rAct">actuator input</small></div>
+          <div><span>Ball speed</span><b id="rV">0</b><small id="rVk">km/h</small></div>
+          <div><span>Net clearance</span><b id="rNet">0.00 m</b><small>above the tape</small></div>
+          <div><span>Top wheel</span><b id="rWt">0</b><small>PWM, 0 to 255</small></div>
+          <div><span>Bottom wheel</span><b id="rWb">0</b><small>PWM, 0 to 255</small></div>
+        </div>
+        <p class="status" id="status"></p>
+      </div>
+    </div>
+    <div class="side panel">
+      <svg id="sideSvg" viewBox="0 0 760 200" role="img" aria-label="Side view of the solved ball flight">
+        <line class="gnd" x1="40" y1="175" x2="740" y2="175"/>
+        <line class="netl" id="sNet" x1="372.9" y1="175" x2="372.9" y2="149.4"/>
+        <path class="path" id="sPath" d=""/>
+        <circle class="ballc" id="sBall" r="6" cx="-20" cy="-20"/>
+        <text x="40" y="192">0 m</text><text id="sNetT" x="372.9" y="192" text-anchor="middle">net</text><text id="sLand" x="700" y="192" text-anchor="middle"></text>
+        <text x="40" y="18">height</text>
+      </svg>
+    </div>
+    <p class="note">This is a JavaScript port of shotmodel.py with the same equations and fitted constants: gravity, air drag and Magnus lift from spin, integrated from a 0.5 m launch height, with the launch angle limited to 15° to 40° (the wheel arm sits between 75° and 50° from horizontal). The drill buttons replay the targets defined in drills.py. The pro picks are a simplified version of the sampler: aim away from the opponent by 1.5 to 3.5 m, mostly deep.</p>
+  </section>
+
+  <section id="tests">
+    <div class="rv sec-head col">
+      <span class="label">Field test · 12 October 2026</span>
+      <h2>First shots on court</h2>
+      <p class="prose">Wheel speeds are motor settings, the actuator input sets tilt, and length is where the ball landed measured from the machine. A singles court is 23.77 m long, so 23.77 m means the ball reached the far baseline.</p>
+    </div>
+    <div class="court" id="testChart" role="img" aria-label="Side view of the court from the machine to the far baseline, showing the net at 11.89 m, the far service line at 18.29 m, and test landings at 22, 23 and 23.77 m">
+      <svg viewBox="0 0 760 170" xmlns="http://www.w3.org/2000/svg">
+        <!-- scale: x = 40 + metres * 28 -->
+        <rect x="40" y="110" width="665.6" height="10" fill="var(--court)" opacity=".22"/>
+        <line x1="40" y1="110" x2="705.6" y2="110" stroke="var(--ink)" stroke-width="1.5"/>
+        <line x1="372.9" y1="110" x2="372.9" y2="84.4" stroke="var(--ink)" stroke-width="3"/>
+        <line x1="552.1" y1="104" x2="552.1" y2="120" stroke="var(--muted)" stroke-width="1.5"/>
+        <line x1="705.6" y1="100" x2="705.6" y2="120" stroke="var(--ink)" stroke-width="2"/>
+        <rect x="28" y="96" width="22" height="14" rx="2" fill="var(--court)"/>
+        <path class="arc" d="M45 96 Q 330 -10 705.6 110" fill="none" stroke="var(--court)" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <circle class="tball" data-m="0" cx="700" cy="110" r="6" fill="var(--ball)" stroke="var(--ball-ink)" style="animation-delay:0.5s"/><circle class="tball" data-m="1" cx="684" cy="110" r="6" fill="var(--ball)" stroke="var(--ball-ink)" style="animation-delay:0.7s"/><circle class="tball" data-m="2" cx="711" cy="110" r="6" fill="var(--ball)" stroke="var(--ball-ink)" style="animation-delay:0.9s"/><circle class="tball" data-m="3" cx="651" cy="110" r="6" fill="var(--ball)" stroke="var(--ball-ink)" style="animation-delay:1.1s"/><circle class="tball" data-m="5" cx="661" cy="110" r="6" fill="var(--ball)" stroke="var(--ball-ink)" style="animation-delay:1.3s"/>
+        <g font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)">
+          <text x="40" y="140" text-anchor="middle">0 m</text>
+          <text x="372.9" y="140" text-anchor="middle">net 11.89</text>
+          <text x="552.1" y="140" text-anchor="middle">service line 18.29</text>
+          <text x="705.6" y="158" text-anchor="end">baseline 23.77</text>
+          <text x="40" y="160">machine</text>
+          <text x="656" y="96" text-anchor="middle">22</text>
+          <text x="684" y="88" text-anchor="middle">23</text>
+          <text x="372.9" y="78" text-anchor="middle">0.914 m</text>
+        </g>
+      </svg>
+    </div>
+    <div class="rv tbl">
+      <table>
+        <thead><tr><th>Wheels, PWM top / bottom</th><th>Actuator input</th><th>Measured result</th><th>Model landing</th></tr></thead>
+        <tbody>
+          <tr class="good" data-m="0" tabindex="0"><td class="num">180 / 110</td><td class="num">65</td><td>23.77 m, good spin</td><td class="num">25.0 m</td></tr>
+          <tr class="good" data-m="1" tabindex="0"><td class="num">180 / 110 (repeat)</td><td class="num">65</td><td>23 m, right on the line</td><td class="num">25.0 m</td></tr>
+          <tr class="good" data-m="2" tabindex="0"><td class="num">135 / 135</td><td class="num">65</td><td>23.77 m</td><td class="num">23.8 m</td></tr>
+          <tr data-m="3" tabindex="0"><td class="num">150 / 110</td><td class="num">65</td><td>22 m, not enough spin</td><td class="num">22.0 m</td></tr>
+          <tr><td class="num">200 / 95</td><td class="num">60</td><td>Too far</td><td class="num">23.8 m</td></tr>
+          <tr class="good" data-m="5" tabindex="0"><td class="num">200 / 95</td><td class="num">63 to 68</td><td>22 m, about a foot short of the line</td><td class="num">25.2 m</td></tr>
+          <tr><td class="num">200 / 95</td><td class="num">60 &lt; x &lt; max</td><td>Between the middle of the baseline and the service box</td><td class="num">not modelled</td></tr>
+          <tr><td class="num">200 / 95</td><td class="num">max angle</td><td>Just over the service box</td><td class="num">not modelled</td></tr>
+          <tr><td class="num">200 / 95</td><td class="num">max</td><td>Far too high</td><td class="num">not modelled</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="col" style="margin-top:18px;color:var(--muted);font-size:.95rem">The fitted model matches the 135 / 135 and 150 / 110 shots almost exactly. It misses the 200 / 95 shots at higher tilt, where the real ball fell short while the model says it should go further. That points at our actuator input to angle conversion, so the next calibration step is a measured tilt sweep.</p>
+  </section>
+
+
+  <section id="data">
+    <div class="rv sec-head col">
+      <span class="label">Machine learning data · Python in Google Colab</span>
+      <h2>Learning a playing style from match video</h2>
+      <p class="prose">For the machine to choose shots like a professional, it needs to know what professionals actually do. We built a pipeline that turns full broadcast matches into a table of every shot: where the ball came from, where both players stood, and where the reply landed.</p>
+    </div>
+    <div class="rv two-col">
+      <ol class="pipe">
+        <li><div><h3>Cut the match into rallies</h3><p>Scene detection splits a full broadcast at every camera cut, keeping clips between 3 and 40 seconds. Each one is a candidate rally.</p></div></li>
+        <li><div><h3>Track everything</h3><p>Pretrained models find the ball, the court lines, every bounce and both players in each frame. A homography converts them from pixels to court coordinates.</p></div></li>
+        <li><div><h3>Work out who is where</h3><p>Players switch ends at changeovers. We read the scoreboard with OCR, then counted games from the final score to know which end each player was on.</p></div></li>
+        <li><div><h3>Extract every shot</h3><p>For 150 sampled rallies per match, each shot becomes one row: stroke, the incoming bounce, both player positions, the open side of the court, the target and its risk.</p></div></li>
+      </ol>
+      <div style="display:grid;gap:18px;align-content:start;min-width:0">
+        <div class="callout"><span class="label">What failed first</span><b>33%</b><p>Our first version recorded only which zone each ball landed in. Predictions matched simply guessing the most common zone, so those features carried no signal. Shot choice depends on where the players stand, so version 2 captures both positions at contact.</p></div>
+<pre class="code"><span class="c"># Which end is each player on?</span>
+SET_GAMES = [10, 9, 13, 9, 18]  <span class="c"># 6-4, 3-6, 7-6, 3-6, 10-8</span>
+
+def total_games(s_a, s_b, g_a, g_b):
+    done = s_a + s_b
+    return sum(SET_GAMES[:done]) + g_a + g_b
+
+def starts_near_now(score):
+    n = total_games(*score)
+    changeovers = (n + 1) // 2
+    return changeovers % 2 == 0</pre>
+        <p class="credit">Ball, court and bounce models come from the open source <a href="https://github.com/yastrebksv/TennisProject" target="_blank" rel="noopener">TennisProject</a>. The rally cutting, player assignment, shot extraction and features are our own.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="vision">
+    <div class="rv sec-head col">
+      <span class="label">Computer vision</span>
+      <h2>Teaching the machine to see</h2>
+      <p class="prose">We filmed clips from the machine's own height and position and tested the vision pipeline on them. Several findings changed the hardware design.</p>
+    </div>
+    <div class="rv findings">
+      <div><span class="big">0.1 in/px</span><h3>Precision near the machine</h3><p>A 7 point court calibration resolves a bounce near the baseline to a fraction of an inch per pixel. Accuracy drops toward the net, where depth is compressed to about 4.8 in/px.</p></div>
+      <div><span class="big">90°</span><h3>The blind corners</h3><p>From the baseline centre, the near doubles corners sit about 90° off a forward camera's axis. No software fixes that, so the design moved to two cameras angled outward.</p></div>
+      <div><span class="big">HDR</span><h3>A costly video setting</h3><p>iPhone HDR video looked right on the phone but OpenCV read washed out colours, which broke the ball colour thresholds. Turning HDR off fixed it.</p></div>
+      <div><span class="big">Color + ROI</span><h3>A detector with no training</h3><p>A yellow ball on a blue court separates cleanly by colour. An HSV threshold inside a court shaped polygon finds the ball and runs easily on a Raspberry Pi.</p></div>
+    </div>
+  </section>
+
+  <section id="next">
+    <div class="rv sec-head col">
+      <span class="label">Next</span>
+      <h2>What comes next</h2>
+    </div>
+    <ol class="rv next col">
+      <li><span>Measure a full tilt sweep to fix the actuator to angle conversion, then refit the four solver constants from 30 to 40 measured shots.</span></li>
+      <li><span>Mount two outward angled cameras at the machine's fixed height and run the bounce test at the hardest spot, near the net.</span></li>
+      <li><span>Field test the drills, add a powered ball feeder in place of the 6 second hand feed, then connect vision, sampler and solver into one loop.</span></li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>Built by Tarun Dasari, Ziv Respler and Johnson Xiao</span>
+    <span>Code and notes: <a href="https://github.com/dasaritarunp16/rally-machine" target="_blank" rel="noopener">github.com/dasaritarunp16/rally-machine</a></span>
+  </footer>
+</div>
+
+<dialog class="lb" id="lb" aria-label="CAD image viewer">
+  <div class="lbin">
+    <img id="lbImg" alt="">
+    <div class="lbbar"><p id="lbCap"></p><div class="btns"><button type="button" id="lbPrev">Prev</button><button type="button" id="lbNext">Next</button><button type="button" class="pri" id="lbClose">Close</button></div></div>
+  </div>
+</dialog>
+<script>
+(function(){
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+document.documentElement.classList.add('anim');
+
+/* reveal on scroll: content is visible at rest, this only adds a rise */
+if('IntersectionObserver' in window && !reduce){
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.rv').forEach(el=>{const r=el.getBoundingClientRect();if(r.top>innerHeight)io.observe(el)});
+}
+
+/* test chart: drop the balls when seen, link rows to markers */
+const chart=document.getElementById('testChart');
+if(chart){
+  if('IntersectionObserver' in window && !reduce){
+    const io2=new IntersectionObserver(es=>{if(es[0].isIntersecting){chart.classList.add('drop');io2.disconnect()}},{threshold:.4});
+    if(chart.getBoundingClientRect().top>innerHeight) io2.observe(chart);
+  }
+  document.querySelectorAll('tbody tr[data-m]').forEach(tr=>{
+    const m=tr.dataset.m, ball=chart.querySelector('.tball[data-m="'+m+'"]');
+    const on=()=>{chart.classList.add('dim');ball&&ball.classList.add('hot')};
+    const off=()=>{chart.classList.remove('dim');ball&&ball.classList.remove('hot')};
+    tr.addEventListener('mouseenter',on);tr.addEventListener('mouseleave',off);
+    tr.addEventListener('focus',on);tr.addEventListener('blur',off);
+  });
+}
+
+/* CAD lightbox */
+const lb=document.getElementById('lb'), links=[...document.querySelectorAll('#cad figure a')];
+let cur=0;
+function show(i){cur=(i+links.length)%links.length;const a=links[cur];document.getElementById('lbImg').src=a.href;document.getElementById('lbImg').alt=a.querySelector('img').alt;document.getElementById('lbCap').innerHTML=a.parentElement.querySelector('figcaption').innerHTML}
+if(lb && lb.showModal){
+  links.forEach((a,i)=>a.addEventListener('click',e=>{e.preventDefault();show(i);lb.showModal()}));
+  document.getElementById('lbPrev').onclick=()=>show(cur-1);
+  document.getElementById('lbNext').onclick=()=>show(cur+1);
+  document.getElementById('lbClose').onclick=()=>lb.close();
+  lb.addEventListener('click',e=>{if(e.target===lb)lb.close()});
+  lb.addEventListener('keydown',e=>{if(e.key==='ArrowRight')show(cur+1);if(e.key==='ArrowLeft')show(cur-1)});
+}
+
+/* ---------- shot solver ---------- */
+const G=9.81,RHO=1.21,M=0.057,RB=0.033,A=Math.PI*RB*RB,CD=0.55,CLK=0.30,Z0=0.5,NETH=0.914,NETD=11.89,DT=0.002,KV=0.90,KS=0.50,RW=0.0762,WMAX=650,DEGU=0.26,TMIN=15,TMAX=40;
+const K=0.5*RHO*A/M;
+function fly(v,angDeg,rpm,keep){
+  const a=angDeg*Math.PI/180,w=rpm*2*Math.PI/60;
+  let x=0,z=Z0,vx=v*Math.cos(a),vz=v*Math.sin(a),t=0;const pts=keep?[[0,Z0,0]]:null;
+  let n=0;
+  while(z>0&&t<6){
+    const sp=Math.hypot(vx,vz),cl=CLK*w*RB/sp;
+    const ax=-K*CD*sp*vx+K*cl*sp*vz, az=-G-K*CD*sp*vz-K*cl*sp*vx;
+    vx+=ax*DT;vz+=az*DT;const px=x,pz=z;x+=vx*DT;z+=vz*DT;t+=DT;
+    if(keep&&(++n%10===0))pts.push([x,z,t]);
+    if(z<=0){const f=pz/(pz-z);x=px+(x-px)*f;z=0;}
+  }
+  if(keep)pts.push([x,0,t]);
+  return {range:x,pts,t};
+}
+function heightAt(v,ang,rpm,d){
+  const a=ang*Math.PI/180,w=rpm*2*Math.PI/60;
+  let x=0,z=Z0,vx=v*Math.cos(a),vz=v*Math.sin(a),t=0;
+  while(z>0&&t<6){
+    const sp=Math.hypot(vx,vz),cl=CLK*w*RB/sp;
+    const ax=-K*CD*sp*vx+K*cl*sp*vz, az=-G-K*CD*sp*vz-K*cl*sp*vx;
+    vx+=ax*DT;vz+=az*DT;const px=x,pz=z;x+=vx*DT;z+=vz*DT;t+=DT;
+    if(px<d&&x>=d)return pz+(z-pz)*(d-px)/(x-px);
+  }
+  return -1;
+}
+function speedFor(R,ang,rpm){
+  let lo=4,hi=60;
+  if(fly(hi,ang,rpm).range<R)return null;
+  for(let i=0;i<26;i++){const m=(lo+hi)/2;if(fly(m,ang,rpm).range<R)lo=m;else hi=m}
+  return (lo+hi)/2;
+}
+function solve(R,netDist,margin,rpm){
+  const f=ang=>{const v=speedFor(R,ang,rpm);if(v===null)return {g:-9,v};return {g:heightAt(v,ang,rpm,netDist)-NETH-margin,v}};
+  let lo=TMIN,hi=TMAX,flo=f(lo),fhi=f(hi);
+  if(fhi.g<0)return {why:'That net margin is not reachable below the 40° launch angle limit. Lower the margin or the spin.'};
+  if(flo.g>=0)return {ang:lo,v:flo.v,flat:true};
+  for(let i=0;i<22;i++){const m=(lo+hi)/2,fm=f(m);if(fm.g<0){lo=m;flo=fm}else{hi=m;fhi=fm}}
+  return {ang:hi,v:fhi.v};
+}
+
+const $=id=>document.getElementById(id);
+const top=$('top'),S=11,OX=20,OY=82.5;
+const toSvg=(d,x)=>[OX+d*S,OY+x*S];
+let target={d:21.5,x:0},opp=null,anim=null;
+
+function solveAndShow(){
+  const rpm=+$('spin').value,margin=+$('marg').value;
+  const R=Math.hypot(target.d,target.x),yaw=Math.atan2(target.x,target.d);
+  const netDist=NETD/Math.cos(yaw);
+  const [tx,ty]=toSvg(target.d,target.x);
+  $('tgt').setAttribute('cx',tx);$('tgt').setAttribute('cy',ty);
+  $('aim').setAttribute('x2',tx);$('aim').setAttribute('y2',ty);
+  if(opp){const [ox,oy]=toSvg(opp.d,opp.x);$('opp').setAttribute('transform',`translate(${ox},${oy})`)}
+  else $('opp').setAttribute('transform','translate(-40,-40)');
+  const sol=solve(R,netDist,margin,rpm);
+  const side=(target.x>=0?'right':'left');
+  $('rYaw').textContent=Math.abs(yaw*180/Math.PI).toFixed(1)+'° '+(Math.abs(target.x)<0.05?'':side);
+  if(sol.why){$('status').textContent=sol.why;return}
+  const tr=fly(sol.v,sol.ang,rpm,true);
+  const clear=heightAt(sol.v,sol.ang,rpm,netDist)-NETH;
+  const apex=Math.max(...tr.pts.map(p=>p[1]));
+  const w=rpm*2*Math.PI/60,diff=w*2*RB;
+  $('rAng').textContent=sol.ang.toFixed(1)+'°';
+  $('rV').textContent=(sol.v*3.6).toFixed(0);$('rVk').textContent='km/h · '+sol.v.toFixed(1)+' m/s';
+  $('rNet').textContent=clear.toFixed(2)+' m';
+  const mean=sol.v/KV, d2=-w*2*RB/KS, top=(mean-d2/2)/RW/WMAX*255, bot=(mean+d2/2)/RW/WMAX*255;
+  $('rWt').textContent=top.toFixed(0);$('rWb').textContent=bot.toFixed(0);
+  $('rAct').textContent='actuator input '+(sol.ang/DEGU).toFixed(0);
+  window.__last={yaw:yaw*180/Math.PI,ang:sol.ang,v:sol.v,top,bot,clear};
+  const pwmOk=top>=0&&top<=255&&bot>=0&&bot<=255;
+  $('status').textContent=`Lands ${R.toFixed(2)} m away after ${tr.t.toFixed(2)} s, peaking at ${apex.toFixed(2)} m.`+(sol.flat?' The machine is at its flattest 15° launch angle, so the ball clears the net by more than asked.':'')+(pwmOk?'':' Wheel command is outside 0 to 255, so drills.py would refuse this shot.');
+  // side view, x along the shot
+  const sx=d=>40+d*28, sz=z=>175-Math.min(z,4.5)*35;
+  $('sNet').setAttribute('x1',sx(netDist));$('sNet').setAttribute('x2',sx(netDist));$('sNet').setAttribute('y2',sz(NETH));
+  $('sNetT').setAttribute('x',sx(netDist));
+  $('sLand').setAttribute('x',sx(R));$('sLand').textContent=R.toFixed(2)+' m';
+  const dpath='M'+tr.pts.map(p=>sx(p[0]).toFixed(1)+' '+sz(p[1]).toFixed(1)).join(' L');
+  $('sPath').setAttribute('d',dpath);
+  play(tr,yaw);
+}
+function play(tr,yaw){
+  cancelAnimationFrame(anim);
+  const sx=d=>40+d*28, sz=z=>175-Math.min(z,4.5)*35, pts=tr.pts, T=tr.t;
+  const place=i=>{const p=pts[i];$('sBall').setAttribute('cx',sx(p[0]));$('sBall').setAttribute('cy',sz(p[1]));
+    const [bx,by]=toSvg(p[0]*Math.cos(yaw),p[0]*Math.sin(yaw));$('tball').setAttribute('cx',bx);$('tball').setAttribute('cy',by);
+    $('tball').setAttribute('r',3.2+p[1]*0.9)};
+  if(reduce){place(pts.length-1);return}
+  const path=$('sPath'),len=path.getTotalLength?path.getTotalLength():0;
+  const t0=performance.now();
+  const step=now=>{
+    const t=(now-t0)/1000;let i=0;while(i<pts.length-1&&pts[i][2]<t)i++;
+    place(i);
+    if(len){path.style.strokeDasharray=len;path.style.strokeDashoffset=len*(1-Math.min(1,t/T))}
+    if(t<T)anim=requestAnimationFrame(step);else if(len){path.style.strokeDashoffset=0}
+  };
+  anim=requestAnimationFrame(step);
+}
+function pt(e){const p=top.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const q=p.matrixTransform(top.getScreenCTM().inverse());return {d:(q.x-OX)/S,x:(q.y-OY)/S}}
+top.addEventListener('click',e=>{
+  const c=pt(e);if(c.d<NETD+0.5)return;
+  target={d:Math.min(23.77,c.d),x:Math.max(-5.48,Math.min(5.48,c.x))};opp=null;solveAndShow();
+});
+$('pro').addEventListener('click',()=>{
+  const ox=(Math.random()*2-1)*3.2; opp={d:24.8,x:ox};
+  const away=1.5+Math.random()*2, dir=ox>0?-1:(ox<0?1:(Math.random()<.5?-1:1));
+  let x=ox+dir*away; x=Math.max(-3.9,Math.min(3.9,x));
+  const deep=Math.random()<0.8; const d=deep?19+Math.random()*4:14.5+Math.random()*3.5;
+  target={d,x};solveAndShow();
+});
+$('again').addEventListener('click',solveAndShow);
+const DRILLS={baseline_depth:[[0,21.5,0.9,1200]],crosscourt:[[-3.4,21,0.8,1200],[3.4,21,0.8,1200]],
+ angle_pass:[[-3.9,19,0.6,900],[3.9,19,0.6,900]],short_ball:[[-1.5,14.5,0.4,-700],[1.5,14.5,0.4,-700]],
+ service_box:[[-2,16.8,0.6,700],[2,16.8,0.6,700]],lob_defense:[[0,20.5,3.0,400]],
+ depth_ladder:[[0,14,0.5,800],[0,17,0.6,1000],[0,20,0.8,1200],[0,22.5,1.0,1300]]};
+let drillTimer=null;
+function runDrill(name){
+  clearTimeout(drillTimer);const shots=DRILLS[name];let i=0;
+  document.querySelectorAll('#drills button').forEach(b=>b.classList.toggle('pri',b.dataset.d===name));
+  const next=()=>{const [x,y,m,r]=shots[i%shots.length];$('spin').value=r;$('marg').value=m;upd();
+    target={d:y,x:x};opp=null;solveAndShow();i++;
+    if(i<Math.max(4,shots.length)&&!reduce)drillTimer=setTimeout(next,1900)};
+  next();
+}
+Object.keys(DRILLS).forEach(k=>{const b=document.createElement('button');b.type='button';b.dataset.d=k;b.textContent=k.replace('_',' ');b.onclick=()=>runDrill(k);$('drills').appendChild(b)});
+
+function upd(){$('spinO').textContent=$('spin').value+' rpm';$('margO').textContent=(+$('marg').value).toFixed(2)+' m'}
+['spin','marg'].forEach(id=>{$(id).addEventListener('input',upd);$(id).addEventListener('change',solveAndShow)});
+upd();solveAndShow();
+})();
+</script>
+
+</body>
+</html>
