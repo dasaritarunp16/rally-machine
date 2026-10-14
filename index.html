@@ -261,7 +261,7 @@ dialog.lb::backdrop{background:rgba(8,14,24,.82)}
       <span class="label">Tennis ball machine, prototype 1</span>
       <svg class="flight" viewBox="0 0 540 70" aria-hidden="true"><path d="M8 62 Q 210 -30 420 58 Q 470 30 520 58"/><line x1="214" y1="70" x2="214" y2="44" stroke="var(--ink)" stroke-width="2.5"/><circle class="ball rest" r="7" cx="0" cy="0"/></svg>
       <h1>A ball machine that <span class="mark">plays the point</span></h1>
-      <p class="lede">Most ball machines feed the same ball over and over. We are building one that will watch where the ball lands and where the opponent stands, choose a reply the way a professional would, and aim for that exact spot. Today the Raspberry Pi can turn a court target into wheel speeds, tilt and rotation, and plan whole drills. Field testing those drills and the vision system come next.</p>
+      <p class="lede">Most ball machines feed the same ball over and over. We are building one that will watch where the ball lands and where the opponent stands, choose a reply the way a professional would, and aim for that exact spot. Today the Raspberry Pi turns a court target into wheel speeds, tilt and rotation, and runs whole drills on court. Connecting the vision system comes next.</p>
       <div class="specs">
         <div><b>2</b><span>independently driven flywheels</span></div>
         <div><b>23.77 m</b><span>full court length reached in testing</span></div>
@@ -286,7 +286,7 @@ dialog.lb::backdrop{background:rgba(8,14,24,.82)}
     <div class="rv loop">
       <article><span class="n">1</span><span class="chip test">In testing</span><h3>Sense</h3><p>Cameras on the machine find the incoming bounce on the near court and the opponent's position on the far side. A calibrated court homography turns pixels into court coordinates in feet.</p></article>
       <article><span class="n">2</span><span class="chip sim">Runs in simulation</span><h3>Decide</h3><p>A shot sampler built from professional match footage picks the stroke, direction, depth and risk. Its aim is set relative to the opponent: target x equals opponent x plus a sampled hit away distance.</p></article>
-      <article><span class="n">3</span><span class="chip live">Hardware and solver coded · field tests next</span><h3>Launch</h3><p>A physics solver converts the target (x, y) into top and bottom wheel speeds, tilt angle and rotation, with a required margin over the net.</p></article>
+      <article><span class="n">3</span><span class="chip live">Hardware, solver and drills tested on court</span><h3>Launch</h3><p>A physics solver converts the target (x, y) into top and bottom wheel speeds, tilt angle and rotation, with a required margin over the net.</p></article>
     </div>
   </section>
 
@@ -581,7 +581,7 @@ def starts_near_now(score):
     <ol class="rv next col">
       <li><span>Measure a full tilt sweep to fix the actuator to angle conversion, then refit the four solver constants from 30 to 40 measured shots.</span></li>
       <li><span>Mount two outward angled cameras at the machine's fixed height and run the bounce test at the hardest spot, near the net.</span></li>
-      <li><span>Field test the drills, add a powered ball feeder in place of the 6 second hand feed, then connect vision, sampler and solver into one loop.</span></li>
+      <li><span>Add a powered ball feeder in place of the 6 second hand feed, then connect vision, sampler and solver into one loop.</span></li>
     </ol>
   </section>
 
